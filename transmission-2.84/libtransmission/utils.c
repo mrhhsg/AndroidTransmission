@@ -1494,8 +1494,10 @@ tr_truncd (double x, int precision)
   char buf[128];
   const int max_precision = (int) log10 (1.0 / DBL_EPSILON) - 1;
   tr_snprintf (buf, sizeof (buf), "%.*f", max_precision, x);
+#ifndef __android__ // android doesn't support lconv ?
   if ((pt = strstr (buf, localeconv ()->decimal_point)))
     pt[precision ? precision+1 : 0] = '\0';
+#endif
   return atof (buf);
 }
 
