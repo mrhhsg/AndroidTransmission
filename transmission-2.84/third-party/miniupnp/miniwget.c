@@ -40,7 +40,7 @@
 #include <netdb.h>
 #define closesocket close
 #endif /* #else _WIN32 */
-#if defined(__sun) || defined(sun)
+#if defined(__sun) || defined(sun) || defined(__android__)
 #define MIN(x,y) (((x)<(y))?(x):(y))
 #endif
 
