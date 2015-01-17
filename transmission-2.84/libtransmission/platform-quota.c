@@ -24,6 +24,8 @@
   #endif
  #elif defined (__sun)
   #include <sys/fs/ufs_quota.h> /* quotactl */
+ #elif defined (__android__)
+  #include <linux/quota.h>
  #else
   #include <sys/quota.h> /* quotactl() */
  #endif
@@ -68,7 +70,8 @@
 /***
 ****
 ***/
-
+/* disabel quota on android */
+#ifndef __android__
 #ifndef WIN32
 static const char *
 getdev (const char * path)
@@ -384,6 +387,8 @@ tr_getDiskFreeSpace (const char * path)
 #endif
 }
 
+#endif /* disabel quota on android */
+
 struct tr_device_info *
 tr_device_info_create (const char * path)
 {
@@ -423,9 +428,11 @@ tr_device_info_get_free_space (const struct tr_device_info * info)
     }
   else
     {
+#ifndef __android__
       free_space = tr_getQuotaFreeSpace (info);
 
       if (free_space < 0)
+#endif
         free_space = tr_getDiskFreeSpace (info->path);
     }
 
