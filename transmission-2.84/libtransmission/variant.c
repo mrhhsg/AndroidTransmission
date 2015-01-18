@@ -19,7 +19,9 @@
  #include <sys/stat.h>
 #endif
 
+#ifndef __android__
 #include <locale.h> /* setlocale() */
+#endif
 #include <unistd.h> /* write() */
 
 #include <event2/buffer.h>
@@ -305,14 +307,20 @@ tr_variantGetReal (const tr_variant * v, double * setme)
   if (!success && tr_variantIsString (v))
     {
       char * endptr;
+#ifndef __android__
       char locale[128];
+#endif
       double d;
 
+#ifndef __android__
       /* the json spec requires a '.' decimal point regardless of locale */
       tr_strlcpy (locale, setlocale (LC_NUMERIC, NULL), sizeof (locale));
       setlocale (LC_NUMERIC, "POSIX");
+#endif
       d  = strtod (getStr (v), &endptr);
+#ifndef __android__
       setlocale (LC_NUMERIC, locale);
+#endif
 
       if ((success = (getStr (v) != endptr) && !*endptr))
         *setme = d;
@@ -1085,12 +1093,16 @@ tr_variantMergeDicts (tr_variant * target, const tr_variant * source)
 struct evbuffer *
 tr_variantToBuf (const tr_variant * v, tr_variant_fmt fmt)
 {
+#ifndef __android__
   char lc_numeric[128];
+#endif
   struct evbuffer * buf = evbuffer_new();
 
+#ifndef __android__
   /* parse with LC_NUMERIC="C" to ensure a "." decimal separator */
   tr_strlcpy (lc_numeric, setlocale (LC_NUMERIC, NULL), sizeof (lc_numeric));
   setlocale (LC_NUMERIC, "C");
+#endif
 
   evbuffer_expand (buf, 4096); /* alloc a little memory to start off with */
 
@@ -1109,8 +1121,10 @@ tr_variantToBuf (const tr_variant * v, tr_variant_fmt fmt)
         break;
     }
 
+#ifndef __android__
   /* restore the previous locale */
   setlocale (LC_NUMERIC, lc_numeric);
+#endif
   return buf;
 }
 
@@ -1269,10 +1283,11 @@ tr_variantFromBuf (tr_variant      * setme,
   int err;
   char lc_numeric[128];
 
+#ifndef __android__
   /* parse with LC_NUMERIC="C" to ensure a "." decimal separator */
   tr_strlcpy (lc_numeric, setlocale (LC_NUMERIC, NULL), sizeof (lc_numeric));
   setlocale (LC_NUMERIC, "C");
-
+#endif
   switch (fmt)
     {
       case TR_VARIANT_FMT_JSON:
@@ -1285,7 +1300,9 @@ tr_variantFromBuf (tr_variant      * setme,
         break;
     }
 
+#ifndef __android__
   /* restore the previous locale */
   setlocale (LC_NUMERIC, lc_numeric);
+#endif
   return err;
 }
